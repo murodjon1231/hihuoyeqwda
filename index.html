@@ -1,0 +1,158 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currency Converter</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+<body class="bg-purple-100 flex items-center justify-center h-screen">
+    <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
+
+        <div class="flex justify-center mb-4">
+            <img src="img.webp" alt="Currency Icon" class="w-16 h-16">
+        </div>
+
+        <h1 class="text-2xl font-bold text-gray-800 mb-4 text-center">CURRENCY CONVERTER</h1>
+
+
+        <label for="amount" class="block text-gray-700 font-semibold mb-2">Amount:</label>
+        <input type="number" id="amount" placeholder="100" 
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4">
+
+
+            <div class="flex gap-4 items-center mb-6">
+            <img class="fromImg" src="" alt="Flag" />
+            <select class="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 select_from">
+                <option>Country</option>
+            </select>
+
+            <i class="fa-solid fa-arrow-right"></i>
+            <img class="toImg" src="" alt="Flag" />
+            <select class="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 select_to">
+                <option>Country</option>
+            </select>
+        </div>
+
+
+        <div class="money mb-3 text-center">Money:</div>
+        <button class="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-md focus:outline-none focus:ring-2 converter-btn">
+            Convert
+        </button>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currency Converter</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+<body class="bg-purple-100 flex items-center justify-center h-screen">
+    <!-- Main Card -->
+    <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
+        <!-- Icon -->
+        <div class="flex justify-center mb-4">
+            <img src="img.webp" alt="Currency Icon" class="w-16 h-16">
+        </div>
+        <!-- Title -->
+        <h1 class="text-2xl font-bold text-gray-800 mb-4 text-center">CURRENCY CONVERTER</h1>
+
+        <!-- Amount Input -->
+        <label for="amount" class="block text-gray-700 font-semibold mb-2">Amount:</label>
+        <input type="number" id="amount" placeholder="100" 
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4">
+
+        <!-- Dropdowns -->
+        <div class="flex gap-4 items-center mb-6">
+            <img class="fromImg" src="" alt="Flag" />
+            <select class="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 select_from">
+                <option>Country</option>
+            </select>
+
+            <i class="fa-solid fa-arrow-right"></i>
+            <img class="toImg" src="" alt="Flag" />
+            <select class="w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 select_to">
+                <option>Country</option>
+            </select>
+        </div>
+
+        <!-- Convert Button -->
+        <div class="money mb-3 text-center">Money:</div>
+        <button class="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-md focus:outline-none focus:ring-2 converter-btn">
+            Convert
+        </button>
+    </div>
+    <script>
+        let select_from = document.querySelector('.select_from');
+        let select_to = document.querySelector('.select_to');
+        let amountInput = document.querySelector('#amount');
+        let converterBtn = document.querySelector('.converter-btn');
+        let money = document.querySelector('.money');
+        let fromImg = document.querySelector('.fromImg');
+        let toImg = document.querySelector('.toImg');
+
+        const url = "https://api.exchangerate.host/symbols"; // API for currency symbols
+        const convertUrl = "https://api.exchangerate.host/convert"; // API for currency conversion
+
+        const SelectData = async () => {
+            try {
+                const res = await fetch(url);
+                const { symbols } = await res.json();
+
+                for (const key in symbols) {
+                    const optionFrom = document.createElement('option');
+                    optionFrom.value = key;
+                    optionFrom.textContent = `${symbols[key].description} (${key})`;
+                    select_from.appendChild(optionFrom);
+
+                    const optionTo = document.createElement('option');
+                    optionTo.value = key;
+                    optionTo.textContent = `${symbols[key].description} (${key})`;
+                    select_to.appendChild(optionTo);
+                }
+            } catch (error) {
+                console.error("Error fetching symbols:", error);
+            }
+        };
+
+        SelectData();
+
+        select_from.addEventListener("change", (e) => {
+            let dynamicURL = e.target.value.toLowerCase().slice(0, 2);
+            fromImg.src = `https://flagcdn.com/20x15/${dynamicURL}.png`;
+        });
+
+        select_to.addEventListener("change", (e) => {
+            let dynamicURL = e.target.value.toLowerCase().slice(0, 2);
+            toImg.src = `https://flagcdn.com/20x15/${dynamicURL}.png`;
+        });
+
+        converterBtn.addEventListener('click', async () => {
+            if (!amountInput.value) {
+                alert('Please fill in the amount input');
+            } else {
+                pull();
+            }
+        });
+
+        const pull = async () => {
+            try {
+                const response = await fetch(`${convertUrl}?from=${select_from.value}&to=${select_to.value}&amount=${amountInput.value}`);
+                const data = await response.json();
+                if (data.result) {
+                    money.textContent = `Converted Amount: ${data.result}`;
+                } else {
+                    money.textContent = "Conversion failed. Please try again.";
+                }
+            } catch (error) {
+                console.error("Error during conversion:", error);
+                money.textContent = "An error occurred. Please try again.";
+            }
+        };
+    </script>
+</body>
+</html>
